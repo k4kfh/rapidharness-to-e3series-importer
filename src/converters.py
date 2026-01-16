@@ -9,7 +9,7 @@ from models import E3FromToListRow, ConversionError
 
 def convert_device_partnumbers(row: E3FromToListRow, device_lut: dict, 
                                errors: list = None, row_num: int = None) -> tuple:
-    """Convert RapidHarness device part numbers to E3.series equivalents.
+    r"""Convert RapidHarness device part numbers to E3.series equivalents.
     
     Handles:
     - Device lookup table mappings
