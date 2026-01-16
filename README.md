@@ -7,10 +7,9 @@ A tool for converting wire harness designs exported from RapidHarness to a forma
 This tool reads Excel exports from RapidHarness and converts them into E3.series From-To List format, enabling easy import of harness designs between the two CAD systems.
 
 **Key Features:**
-- Converts RapidHarness connection data to E3 From-To List format
-- Maps wire types and part numbers between systems
-- Handles connectors, splices, and terminals
-- Automatically detects and converts splice designations
+- Converts RapidHarness connection data to E3 From-To List format, ready for import with the E3.HarnessBuilder add-on's "Import Wire List" feature
+- Maps wire types and part numbers between the RapidHarness parts library and E3.series Component Database
+- Automatically detects and converts splices that are named with an ``S`` prefix
 - Provides wire gauge, color, and type information
 
 ## Repository Structure
@@ -188,7 +187,7 @@ pyinstaller --onefile --console --name "RapidHarnessToE3SeriesImporter" src/from
 
 ### Version Management
 
-The application version is managed in `src/__version__.py`:
+The application version string is set in `src/__version__.py`. This will appear in the output of the CLI (as a traceability measure).
 
 **For Release Builds (GitHub Actions):**
 - Create a git tag: `git tag v1.0.0`
@@ -199,48 +198,14 @@ The application version is managed in `src/__version__.py`:
 
 **For Development Builds (Local):**
 - Run `.\build_exe.ps1` to build locally
-- The script automatically sets the version to `dev-<commit-hash>` (e.g., `dev-261c5a6`)
-- Check the version: `FromToConverter.exe --version`
-
-**To manually update the version:**
-- Edit `src/__version__.py` and change `__version__ = "1.0.0"` to your desired version
-- The CLI will display this version with `--version` flag
+- The script automatically sets the version to `dev-<commit-hash>`, where ``<commit-hash>`` is the most recent _prior_ commit hash (e.g., `dev-261c5a6`)
+- Check the version: `RapidHarnessToE3SeriesImporter.exe --version`
 
 ## Automated Builds (GitHub Actions)
 
-This repository includes a GitHub Actions workflow that automatically builds the executable when a new release is created.
+This repository includes a GitHub Actions workflow that automatically builds the executable when a new release is created. Outside of local builds for development, these builds should serve as the usable binaries for most folks.
 
-### Creating a Release with Automated Build
-
-1. **Create and push a version tag:**
-   ```powershell
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-2. **Create a GitHub Release:**
-   - Go to your repository on GitHub
-   - Click "Releases" → "Create a new release"
-   - Select the tag you just created (e.g., `v1.0.0`)
-   - Add release notes describing changes
-   - Click "Publish release"
-
-3. **Automatic build:**
-   - GitHub Actions will automatically trigger
-   - The workflow builds `FromToConverter.exe` on Windows
-   - The executable is automatically attached to the release
-   - Users can download it from the Releases page
-
-### Manual Workflow Trigger
-
-You can also trigger the build manually without creating a release:
-
-1. Go to the "Actions" tab in GitHub
-2. Select "Build Windows Executable"
-3. Click "Run workflow"
-4. The built executable will be available as a downloadable artifact (retained for 90 days)
-
-## Technical Details
+## Under the Hood
 
 ### Conversion Process
 
@@ -259,33 +224,28 @@ The tool performs the following steps:
    - Creates properly formatted Excel file for E3.series import
    - Includes device names, part numbers, pins, wire data, and signal names
 tool uses external CSV files for component mapping:
-- **Wire lookup table:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type)
-- **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes
-- **Splice detection:** Automatically identifies splice designations (e.g., `S1`, `S2`)
+- **Wire lookup table:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type). You _must_ set up the mappings from Wires in RapidHarness to Wires in E3.series.
+- **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes where necessary. This allows you to override/overcome subtle differences in part numbering (e.g. ``DT06-2S`` in RapidHarness might map to ``AT06-2S`` in E3.series)
+- **Splice detection:** Automatically identifies splice designations with an ``S`` prefix (e.g., `S1`, `S2`)
 
 See [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed information on creating and formatting these CSV files.
 
 Example template files are provided in the `examples/` folder:
 - `wire_lookup_example.csv` - Template showing wire mapping format
 - `device_lookup_example.csv` - Template showing device mapping format
-- 20 AWG
-
-Multiple colors are supported for each gauge. See the `rapidharness_wire_lut` dictionary in the source code for the complete list.
 
 ## Known Limitations
 
 - File paths must be manually configured in the script (no GUI yet)
-- Cable assemblies (multi-conductor cables) are not fully supported
+- Cable assemblies (multi-conductor cables) are not fully supported (yet! PRs welcome...)
 - Splices that _aren't_ named with an ``S`` prefix may not be recognized as splices. This is not _necessarily_ a showstopper, it just means you may need to edit the output manually to designate splices outside this naming convention as splices in E3.
 - CSV files must be properly formatted (UTF-8 encoding, correct column headers)
 
 ## Future Enhancements
 
-Planned improvements include:
-- GUI for easier file and lookup table management
-- Better error reporting and validation
-- Support for cable assemblies
-- Auto-generation of lookup table templates from RapidHarness export
+This works for me right now, but PRs are welcome. I'd love to see the following improvements:
+* Support for multiconductor cables
+* Support for arbitrary regular expressions to identify splices, and a CSV-file-based configuration for this section of the tool, similar to the wire lookup and device lookup tables
 
 ## Dependencies
 
@@ -296,15 +256,4 @@ Planned improvements include:
 
 ## License
 
-[Add your license information here]
-
-## Contributing
-click** (8.1.7): Command-line interface framework
-- **
-[Add contribution guidelines if this is open source]
-
-## Support
-
-For questions or issues:
-- See [docs/From-To-Import-Notes.md](docs/From-To-Import-Notes.md) for technical details
-- [Add contact information or issue tracker link]
+This tool is released under [the MIT license.](./LICENSE.md)
