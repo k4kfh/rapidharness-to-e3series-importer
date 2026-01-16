@@ -276,8 +276,7 @@ Multiple colors are supported for each gauge. See the `rapidharness_wire_lut` di
 
 - File paths must be manually configured in the script (no GUI yet)
 - Cable assemblies (multi-conductor cables) are not fully supported
-- Cable assemblies (multi-conductor cables) are not fully supported
-- Lookup tables must be manually created for each project
+- Splices that _aren't_ named with an ``S`` prefix may not be recognized as splices. This is not _necessarily_ a showstopper, it just means you may need to edit the output manually to designate splices outside this naming convention as splices in E3.
 - CSV files must be properly formatted (UTF-8 encoding, correct column headers)
 
 ## Future Enhancements
