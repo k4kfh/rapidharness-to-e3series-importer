@@ -31,12 +31,12 @@ jobs:
       run: |
         $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
         $version = $tag -replace '^v', ''
-        $content = @"
-"""Version information for the RapidHarness to E3.series Importer."""
-
-__version__ = "$version"
-"@
-        Set-Content -Path "src/__version__.py" -Value $content -Encoding UTF8
+        $lines = @(
+          '"""Version information for the RapidHarness to E3.series Importer."""',
+          '',
+          '__version__ = "' + $version + '"'
+        )
+        $lines | Set-Content -Path "src/__version__.py" -Encoding UTF8
         Write-Host "Version set to: $version"
     
     - name: Build executable with PyInstaller
