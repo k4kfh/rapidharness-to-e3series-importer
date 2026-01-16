@@ -108,8 +108,9 @@ class RapidHarnessParser(InputParser):
                 e3_fromto_row.wire = wire_lut[rh_wire_sku]
             elif rh_wire_sku is not None:
                 error_msg = f"Wire '{rh_wire_sku}' not found in lookup table"
-                click.echo(f"{Fore.RED}⚠ Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
+                click.echo(f"{Fore.RED}[ERROR] Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
                 error = ConversionError(
+                    severity="error",
                     error_type="WIRE_NOT_FOUND",
                     row_number=row_num,
                     entity_id="Wire",
