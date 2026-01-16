@@ -13,7 +13,7 @@ $versionFile = "src/__version__.py"
 
 # Update the version file
 $content = @"
-"""Version information for the From-To List Converter."""
+"""Version information for the RapidHarness to E3.series Importer."""
 
 __version__ = "$devVersion"
 "@

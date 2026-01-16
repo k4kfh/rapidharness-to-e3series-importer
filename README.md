@@ -171,20 +171,10 @@ To create a standalone Windows executable for distribution:
    - Check the version: `RapidHarnessToE3SeriesImporter.exe --version`
 
 3. **Distribute:**
-   - Copy `FromToConverter.exe` to any location
+   - Copy `RapidHarnessToE3SeriesImporter.exe` to any location
    - Share with users (no Python installation required)
 
-### Manual Build (Alternative)
-
-If you prefer to build manually without the script:
-
-```powershell
-# Install PyInstaller
-pip install pyinstaller
-
-# Build the executable
-pyinstaller --onefile --console --name "RapidHarnessToE3SeriesImporter" src/from-to-converter.py
-```
+For detailed information about the build system, see [Build-Notes.md](Build-Notes.md).
 
 ### Version Management
 
@@ -200,11 +190,7 @@ The application version is managed in `src/__version__.py`:
 **For Development Builds (Local):**
 - Run `.\build_exe.ps1` to build locally
 - The script automatically sets the version to `dev-<commit-hash>` (e.g., `dev-261c5a6`)
-- Check the version: `FromToConverter.exe --version`
-
-**To manually update the version:**
-- Edit `src/__version__.py` and change `__version__ = "1.0.0"` to your desired version
-- The CLI will display this version with `--version` flag
+- Check the version: `RapidHarnessToE3SeriesImporter.exe --version`
 
 ## Automated Builds (GitHub Actions)
 
@@ -227,7 +213,7 @@ This repository includes a GitHub Actions workflow that automatically builds the
 
 3. **Automatic build:**
    - GitHub Actions will automatically trigger
-   - The workflow builds `FromToConverter.exe` on Windows
+   - The workflow builds `RapidHarnessToE3SeriesImporter.exe` on Windows
    - The executable is automatically attached to the release
    - Users can download it from the Releases page
 
@@ -258,7 +244,10 @@ The tool performs the following steps:
 3. **Generate E3 From-To List:**
    - Creates properly formatted Excel file for E3.series import
    - Includes device names, part numbers, pins, wire data, and signal names
-tool uses external CSV files for component mapping:
+
+### Component Mapping
+
+The tool uses external CSV files for component mapping:
 - **Wire lookup table:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type)
 - **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes
 - **Splice detection:** Automatically identifies splice designations (e.g., `S1`, `S2`)
@@ -268,14 +257,10 @@ See [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed information on c
 Example template files are provided in the `examples/` folder:
 - `wire_lookup_example.csv` - Template showing wire mapping format
 - `device_lookup_example.csv` - Template showing device mapping format
-- 20 AWG
-
-Multiple colors are supported for each gauge. See the `rapidharness_wire_lut` dictionary in the source code for the complete list.
 
 ## Known Limitations
 
-- File paths must be manually configured in the script (no GUI yet)
-- Cable assemblies (multi-conductor cables) are not fully supported
+- File paths must be manually configured via command-line arguments (no GUI yet)
 - Cable assemblies (multi-conductor cables) are not fully supported
 - Lookup tables must be manually created for each project
 - CSV files must be properly formatted (UTF-8 encoding, correct column headers)
@@ -295,17 +280,21 @@ Planned improvements include:
 - **colorama** (0.4.6): Cross-platform colored terminal output
 - **PyInstaller** (build-time only): Creating standalone executables
 
+## Build System Documentation
+
+For detailed information about how the build system works, including version management, PyInstaller configuration, and troubleshooting, see [Build-Notes.md](Build-Notes.md).
+
 ## License
 
 [Add your license information here]
 
 ## Contributing
-click** (8.1.7): Command-line interface framework
-- **
+
 [Add contribution guidelines if this is open source]
 
 ## Support
 
 For questions or issues:
 - See [docs/From-To-Import-Notes.md](docs/From-To-Import-Notes.md) for technical details
+- See [Build-Notes.md](Build-Notes.md) for build system information
 - [Add contact information or issue tracker link]
