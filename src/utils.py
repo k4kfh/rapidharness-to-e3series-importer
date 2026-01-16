@@ -2,7 +2,7 @@
 
 import csv
 from pathlib import Path
-from .models import E3WireComponent
+from models import E3WireComponent
 
 
 def load_wire_lookup_table(csv_path: Path) -> dict:

@@ -5,7 +5,7 @@ import openpyxl
 import click
 from colorama import Fore, Style
 
-from .models import E3FromToListRow, E3WireComponent
+from models import E3FromToListRow, E3WireComponent
 
 
 # E3.series From-To List column definitions

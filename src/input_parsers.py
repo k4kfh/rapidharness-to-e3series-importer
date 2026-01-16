@@ -12,7 +12,7 @@ import openpyxl
 import click
 from colorama import Fore, Style
 
-from .models import E3FromToListRow, RapidHarnessEndpoint, ConversionError
+from models import E3FromToListRow, RapidHarnessEndpoint, ConversionError
 
 
 class InputParser(ABC):

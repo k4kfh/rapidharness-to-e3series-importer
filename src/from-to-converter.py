@@ -9,12 +9,12 @@ import openpyxl
 # Initialize colorama for cross-platform colored terminal output
 init(autoreset=True)
 
-from .__version__ import __version__
-from .utils import load_wire_lookup_table, load_device_lookup_table
-from .input_parsers import RapidHarnessParser
-from .converters import convert_device_partnumbers
-from .output_writers import write_e3_fromto_list
-from .models import ConversionError
+from __version__ import __version__
+from utils import load_wire_lookup_table, load_device_lookup_table
+from input_parsers import RapidHarnessParser
+from converters import convert_device_partnumbers
+from output_writers import write_e3_fromto_list
+from models import ConversionError
 
 
 @click.command()
@@ -64,8 +64,6 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     
     This tool reads connection data from a RapidHarness Excel export and converts it
     to the format required by Zuken E3.series CAD software for import.
-    
-    For more information, visit: https://github.com/k4kfh/rapidharness-to-e3series-importer
     """
     
     errors = []
