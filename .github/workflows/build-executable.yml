@@ -1,0 +1,46 @@
+name: Build Windows Executable
+
+# Trigger this workflow when a new GitHub Release is published
+on:
+  release:
+    types: [published]
+  workflow_dispatch:  # Also allow manual triggering from GitHub UI
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --onefile --console --name "FromToConverter" from-to-converter.py
+    
+    - name: Upload executable as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FromToConverter-Windows
+        path: dist/FromToConverter.exe
+        retention-days: 90
+    
+    - name: Upload executable to release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/FromToConverter.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
