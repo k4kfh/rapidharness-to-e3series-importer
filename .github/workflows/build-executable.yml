@@ -70,6 +70,7 @@ jobs:
         pyinstaller --onefile `
           --name "RapidHarnessToE3SeriesImporter" `
           --console `
+          --paths src `
           --collect-all click `
           --collect-all openpyxl `
           --collect-all colorama `
@@ -78,6 +79,12 @@ jobs:
           --hidden-import csv `
           --hidden-import pathlib `
           --hidden-import colorama `
+          --hidden-import __version__ `
+          --hidden-import utils `
+          --hidden-import input_parsers `
+          --hidden-import converters `
+          --hidden-import output_writers `
+          --hidden-import models `
           --noupx `
           src/from-to-converter.py
         

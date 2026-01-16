@@ -41,9 +41,11 @@ Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
 # --collect-all: Ensures all package data files are bundled (required for click, openpyxl, colorama)
 # --hidden-import: Explicitly includes modules that might not be detected automatically
 # --noupx: Disables UPX compression to avoid compatibility issues across systems
+# --paths: Add src directory to Python path so imports work correctly
 pyinstaller --onefile `
     --name "RapidHarnessToE3SeriesImporter" `
     --console `
+    --paths src `
     --collect-all click `
     --collect-all openpyxl `
     --collect-all colorama `
@@ -52,6 +54,12 @@ pyinstaller --onefile `
     --hidden-import csv `
     --hidden-import pathlib `
     --hidden-import colorama `
+    --hidden-import __version__ `
+    --hidden-import utils `
+    --hidden-import input_parsers `
+    --hidden-import converters `
+    --hidden-import output_writers `
+    --hidden-import models `
     --noupx `
     src/from-to-converter.py
 
