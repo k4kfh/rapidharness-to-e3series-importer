@@ -2,7 +2,7 @@
 # This script automates the process of building a standalone .exe using PyInstaller
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "From-To Converter - Build Script" -ForegroundColor Cyan
+Write-Host "RapidHarness to E3.series Importer - Build Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -42,7 +42,7 @@ Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
 # --hidden-import: Explicitly includes modules that might not be detected automatically
 # --noupx: Disables UPX compression to avoid compatibility issues across systems
 pyinstaller --onefile `
-    --name "FromToConverter" `
+    --name "RapidHarnessToE3SeriesImporter" `
     --console `
     --collect-all click `
     --collect-all openpyxl `
@@ -65,7 +65,7 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host "Build complete!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Executable location: dist\FromToConverter.exe" -ForegroundColor Cyan
+Write-Host "Executable location: dist\RapidHarnessToE3SeriesImporter.exe" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "You can now distribute the .exe file to users." -ForegroundColor White
 Write-Host "No Python installation required to run it!" -ForegroundColor White

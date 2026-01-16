@@ -42,7 +42,7 @@ jobs:
     - name: Build executable with PyInstaller
       run: |
         pyinstaller --onefile `
-          --name "FromToConverter" `
+          --name "RapidHarnessToE3SeriesImporter" `
           --console `
           --collect-all click `
           --collect-all openpyxl `
@@ -58,14 +58,14 @@ jobs:
     - name: Upload executable as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FromToConverter-Windows
-        path: dist/FromToConverter.exe
+        name: RapidHarnessToE3SeriesImporter-Windows
+        path: dist/RapidHarnessToE3SeriesImporter.exe
         retention-days: 90
     
     - name: Upload executable to release
       if: github.event_name == 'release'
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/FromToConverter.exe
+        files: dist/RapidHarnessToE3SeriesImporter.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

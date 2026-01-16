@@ -1,4 +1,4 @@
-# From-To List Converter
+# RapidHarness to E3.series Importer
 
 A tool for converting wire harness designs exported from RapidHarness to a format compatible with E3.series CAD software.
 
@@ -16,12 +16,14 @@ This tool reads Excel exports from RapidHarness and converts them into E3.series
 ## Repository Structure
 
 ```
-from-to-list-import/
+rapidharness-to-e3series-importer/
 ├── README.md                     # This file
 ├── requirements.txt              # Python dependencies
 ├── build_exe.ps1                 # Local build script for creating .exe
+├── set_dev_version.ps1           # Development version script
 ├── src/
 │   ├── from-to-converter.py      # Main CLI entry point
+│   ├── __version__.py            # Version information
 │   ├── models.py                 # Data model definitions
 │   ├── input_parsers.py          # Abstract parser interface + RapidHarness parser
 │   ├── converters.py             # Conversion logic for device part numbers
@@ -47,7 +49,7 @@ from-to-list-import/
 ### Downloading the Tool
 
 1. Go to the [Releases](../../releases) page
-2. Download the latest `FromToConverter.exe`
+2. Download the latest `RapidHarnessToE3SeriesImporter.exe`
 3. Save it anywhere on your computer (no installation needed!)
 
 ### Running the Tool
@@ -63,22 +65,22 @@ from-to-list-import/
    
    **Option A: Using the executable (Windows)**
    ```cmd
-   FromToConverter.exe --input "RapidHarness_Export.xlsx" --output "E3FromToList.xlsx" --wire-map "wire_lookup.csv" --device-map "device_lookup.csv"
+   RapidHarnessToE3SeriesImporter.exe --input "RapidHarness_Export.xlsx" --output "E3FromToList.xlsx" --wire-map "wire_lookup.csv" --device-map "device_lookup.csv"
    ```
    
    **Option B: Short form**
    ```cmd
-   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
+   RapidHarnessToE3SeriesImporter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
    ```
    
    **Option C: Save errors to a CSV file for analysis**
    ```cmd
-   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv --error-log errors.csv
+   RapidHarnessToE3SeriesImporter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv --error-log errors.csv
    ```
    
    **Option D: With verbose output**
    ```cmd
-   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv -v
+   RapidHarnessToE3SeriesImporter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv -v
    ```
 
 3. **Import into E3.series:**
@@ -164,9 +166,9 @@ To create a standalone Windows executable for distribution:
    - Build the executable with PyInstaller
 
 2. **Find the executable:**
-   - The built executable will be in `dist\FromToConverter.exe`
+   - The built executable will be in `dist\RapidHarnessToE3SeriesImporter.exe`
    - This is a fully portable, standalone application
-   - Check the version: `FromToConverter.exe --version`
+   - Check the version: `RapidHarnessToE3SeriesImporter.exe --version`
 
 3. **Distribute:**
    - Copy `FromToConverter.exe` to any location
@@ -181,7 +183,7 @@ If you prefer to build manually without the script:
 pip install pyinstaller
 
 # Build the executable
-pyinstaller --onefile --console --name "FromToConverter" src/from-to-converter.py
+pyinstaller --onefile --console --name "RapidHarnessToE3SeriesImporter" src/from-to-converter.py
 ```
 
 ### Version Management

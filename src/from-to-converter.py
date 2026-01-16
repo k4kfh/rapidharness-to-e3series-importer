@@ -58,7 +58,7 @@ from models import ConversionError
     default=None,
     help='Optional: Path to save a CSV file of all errors encountered'
 )
-@click.version_option(version=__version__, prog_name='FromToConverter')
+@click.version_option(version=__version__, prog_name='RapidHarness-to-E3Series-Importer')
 def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, error_log_file):
     """Convert RapidHarness wire harness exports to E3.series From-To List format.
     

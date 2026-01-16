@@ -1,3 +1,3 @@
-﻿"""Version information for the From-To List Converter."""
+﻿"""Version information for the RapidHarness to E3.series Importer."""
 
-__version__ = "unknown"
+__version__ = "1.0.0"
