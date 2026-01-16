@@ -52,6 +52,7 @@ pyinstaller --onefile `
     --hidden-import csv `
     --hidden-import pathlib `
     --hidden-import colorama `
+    --hidden-import __version__ `
     --noupx `
     src/from-to-converter.py
 
