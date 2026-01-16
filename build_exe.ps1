@@ -39,17 +39,17 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
 # Enhanced options for true portability:
 # --collect-all: Ensures all package data files are bundled (required for click, openpyxl, colorama)
-# --collect-submodules: Collects all submodules from the src package
-# --paths: Tells PyInstaller where to find the src package
+# --add-data: Explicitly includes the src directory and all its files
+# --paths: Tells PyInstaller where to find the src package for imports
 # --noupx: Disables UPX compression to avoid compatibility issues across systems
 pyinstaller --onefile `
     --name "RapidHarnessToE3SeriesImporter" `
     --console `
     --paths . `
+    --add-data "src;src" `
     --collect-all click `
     --collect-all openpyxl `
     --collect-all colorama `
-    --collect-submodules src `
     --hidden-import click `
     --hidden-import openpyxl `
     --hidden-import csv `

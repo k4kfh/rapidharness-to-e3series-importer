@@ -45,10 +45,10 @@ jobs:
           --name "RapidHarnessToE3SeriesImporter" `
           --console `
           --paths . `
+          --add-data "src;src" `
           --collect-all click `
           --collect-all openpyxl `
           --collect-all colorama `
-          --collect-submodules src `
           --hidden-import click `
           --hidden-import openpyxl `
           --hidden-import csv `
