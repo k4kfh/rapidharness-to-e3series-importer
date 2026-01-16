@@ -28,7 +28,17 @@ jobs:
     
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --console --name "FromToConverter" from-to-converter.py
+        pyinstaller --onefile `
+          --name "FromToConverter" `
+          --console `
+          --collect-all click `
+          --collect-all openpyxl `
+          --hidden-import click `
+          --hidden-import openpyxl `
+          --hidden-import csv `
+          --hidden-import pathlib `
+          --noupx `
+          from-to-converter.py
     
     - name: Upload executable as artifact
       uses: actions/upload-artifact@v4

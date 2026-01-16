@@ -27,11 +27,22 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Build executable
+# Build executable with enhanced PyInstaller options for portability
 Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
+# Enhanced options for true portability:
+# --collect-all: Ensures all package data files are bundled (required for click, openpyxl)
+# --hidden-import: Explicitly includes modules that might not be detected automatically
+# --noupx: Disables UPX compression to avoid compatibility issues across systems
 pyinstaller --onefile `
     --name "FromToConverter" `
     --console `
+    --collect-all click `
+    --collect-all openpyxl `
+    --hidden-import click `
+    --hidden-import openpyxl `
+    --hidden-import csv `
+    --hidden-import pathlib `
+    --noupx `
     from-to-converter.py
 
 if ($LASTEXITCODE -ne 0) {
