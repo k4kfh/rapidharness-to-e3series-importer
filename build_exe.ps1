@@ -52,9 +52,9 @@ pyinstaller --onefile `
     --hidden-import csv `
     --hidden-import pathlib `
     --hidden-import colorama `
-    --collect-submodules src `
+    --hidden-import src `
     --noupx `
-    src/from-to-converter.py
+    __main__.py
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: Build failed" -ForegroundColor Red

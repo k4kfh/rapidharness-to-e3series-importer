@@ -9,12 +9,12 @@ import openpyxl
 # Initialize colorama for cross-platform colored terminal output
 init(autoreset=True)
 
-from __version__ import __version__
-from utils import load_wire_lookup_table, load_device_lookup_table
-from input_parsers import RapidHarnessParser
-from converters import convert_device_partnumbers
-from output_writers import write_e3_fromto_list
-from models import ConversionError
+from .__version__ import __version__
+from .utils import load_wire_lookup_table, load_device_lookup_table
+from .input_parsers import RapidHarnessParser
+from .converters import convert_device_partnumbers
+from .output_writers import write_e3_fromto_list
+from .models import ConversionError
 
 
 @click.command()

@@ -2,7 +2,7 @@
 
 import re
 
-from models import E3FromToListRow
+from .models import E3FromToListRow
 
 
 def convert_device_partnumbers(row: E3FromToListRow, device_lut: dict, 

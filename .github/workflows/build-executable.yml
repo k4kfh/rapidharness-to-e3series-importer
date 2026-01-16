@@ -52,9 +52,9 @@ jobs:
           --hidden-import csv `
           --hidden-import pathlib `
           --hidden-import colorama `
-          --collect-submodules src `
+          --hidden-import src `
           --noupx `
-          src/from-to-converter.py
+          __main__.py
     
     - name: Upload executable as artifact
       uses: actions/upload-artifact@v4
