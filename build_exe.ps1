@@ -14,10 +14,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host ""
 
-# Clean previous builds
+# Clean previous builds (but keep the spec file)
 Write-Host "Cleaning previous build artifacts..." -ForegroundColor Yellow
 Remove-Item -Recurse -Force dist, build -ErrorAction SilentlyContinue
-Remove-Item -Force *.spec -ErrorAction SilentlyContinue
 
 # Install dependencies
 Write-Host "Installing dependencies..." -ForegroundColor Yellow
@@ -35,33 +34,13 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Build executable with enhanced PyInstaller options for portability
+# Build executable with PyInstaller using spec file for consistent builds
 Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
-# Enhanced options for true portability:
-# --collect-all: Ensures all package data files are bundled (required for click, openpyxl, colorama)
-# --hidden-import: Explicitly includes modules that might not be detected automatically
-# --noupx: Disables UPX compression to avoid compatibility issues across systems
-# --paths: Add src directory to Python path so imports work correctly
-pyinstaller --onefile `
-    --name "RapidHarnessToE3SeriesImporter" `
-    --console `
-    --paths src `
-    --collect-all click `
-    --collect-all openpyxl `
-    --collect-all colorama `
-    --hidden-import click `
-    --hidden-import openpyxl `
-    --hidden-import csv `
-    --hidden-import pathlib `
-    --hidden-import colorama `
-    --hidden-import __version__ `
-    --hidden-import utils `
-    --hidden-import input_parsers `
-    --hidden-import converters `
-    --hidden-import output_writers `
-    --hidden-import models `
-    --noupx `
-    src/from-to-converter.py
+# Using spec file ensures:
+# - Consistent builds across different environments
+# - All dependencies properly collected
+# - Cross-platform compatibility
+pyinstaller --clean --noconfirm RapidHarnessToE3SeriesImporter.spec
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: Build failed" -ForegroundColor Red

@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.13'
     
     - name: Install dependencies
       shell: pwsh
@@ -66,27 +66,8 @@ jobs:
         # Clean any previous builds
         Remove-Item -Recurse -Force dist, build -ErrorAction SilentlyContinue
         
-        # Build with exact same options as local build script
-        pyinstaller --onefile `
-          --name "RapidHarnessToE3SeriesImporter" `
-          --console `
-          --paths src `
-          --collect-all click `
-          --collect-all openpyxl `
-          --collect-all colorama `
-          --hidden-import click `
-          --hidden-import openpyxl `
-          --hidden-import csv `
-          --hidden-import pathlib `
-          --hidden-import colorama `
-          --hidden-import __version__ `
-          --hidden-import utils `
-          --hidden-import input_parsers `
-          --hidden-import converters `
-          --hidden-import output_writers `
-          --hidden-import models `
-          --noupx `
-          src/from-to-converter.py
+        # Build using spec file for consistent, reproducible builds
+        pyinstaller --clean --noconfirm RapidHarnessToE3SeriesImporter.spec
         
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Build failed!" -ForegroundColor Red
