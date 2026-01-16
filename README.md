@@ -21,7 +21,10 @@ from-to-list-import/
 ├── requirements.txt              # Python dependencies
 ├── build_exe.ps1                 # Local build script for creating .exe
 ├── README.md                     # This file
+├── LOOKUP_TABLES.md              # Detailed guide for creating CSV lookup tables
 ├── From-To-Import-Notes.md       # Technical notes and documentation
+├── wire_lookup_example.csv       # Example wire lookup table template
+├── device_lookup_example.csv     # Example device lookup table template
 ├── .github/
 │   └── workflows/
 │       └── build-executable.yml  # GitHub Actions workflow for automated builds
@@ -39,28 +42,44 @@ from-to-list-import/
 
 ### Running the Tool
 
-1. **Prepare your input file:**
+1. **Prepare your input files:**
    - Export your RapidHarness design to Excel format
-   - Note the file location
+   - Create two CSV lookup tables (see [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed instructions):
+     - Wire lookup table (maps wire part numbers)
+     - Device lookup table (maps connector/device part numbers)
+   - Example templates are provided: `wire_lookup_example.csv` and `device_lookup_example.csv`
 
-2. **Edit the script configuration:**
-   - Open `from-to-converter.py` in a text editor
-   - Update the file paths in the `CONFIG PARAMETERS` section:
-     ```python
-     rh_excel_path = "path/to/your/RapidHarness_Export.xlsx"
-     e3_fromto_excel_path = "path/to/output/E3FromToList.xlsx"
-     ```
+2. **Run the converter:**
+   
+   **Option A: Using the executable (Windows)**
+   ```cmd
+   FromToConverter.exe --input "RapidHarness_Export.xlsx" --output "E3FromToList.xlsx" --wire-map "wire_lookup.csv" --device-map "device_lookup.csv"
+   ```
+   
+   **Option B: Short form**
+   ```cmd
+   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
+   ```
+   
+   **Option C: With verbose output**
+   ```cmd
+   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv --verbose
+   ```
 
-3. **Run the converter:**
-   - Double-click `FromToConverter.exe`
-   - The tool will process the input and create the E3 From-To List
-
-4. **Import into E3.series:**
+3. **Import into E3.series:**
    - Open your E3.series project
    - Use the From-To List import function
-   - Select the generated `E3FromToList.xlsx` file
+   - Select the generated output file
 
-**Note:** Currently, file paths must be configured in the script. A future version will add a GUI or command-line interface for easier file selection.
+**Command-line Options:**
+- `--input` or `-i`: Path to the RapidHarness Excel export file (required)
+- `--output` or `-o`: Path for the output E3 From-To List file (required)
+- `--wire-map` or `-w`: Path to the wire lookup table CSV file (required)
+- `--device-map` or `-d`: Path to the device lookup table CSV file (required)
+- `--verbose` or `-v`: Enable detailed output messages (optional)
+- `--help`: Display help information
+
+**See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed information on creating and formatting the CSV lookup tables.**
 
 ## For Developers
 
@@ -78,9 +97,18 @@ from-to-list-import/
    pip install -r requirements.txt
    ```
 
-3. **Run the script directly:**
+3. **Create your lookup table CSV files:**
+   - See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed instructions
+   - Use the provided example files as templates
+
+4. **Run the script directly:**
    ```powershell
-   python from-to-converter.py
+   python from-to-converter.py --input "input.xlsx" --output "output.xlsx" --wire-map "wire_lookup.csv" --device-map "device_lookup.csv"
+   ```
+   
+   Or use the short form:
+   ```powershell
+   python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
    ```
 
 ### Building the Executable Locally
@@ -164,21 +192,16 @@ The tool performs the following steps:
 3. **Generate E3 From-To List:**
    - Creates properly formatted Excel file for E3.series import
    - Includes device names, part numbers, pins, wire data, and signal names
-
-### Lookup Tables
-
-The script includes lookup tables for:
-- **Wire types:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type)
-- **Device part numbers:** Converts between RapidHarness and E3 part numbering schemes
+tool uses external CSV files for component mapping:
+- **Wire lookup table:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type)
+- **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes
 - **Splice detection:** Automatically identifies splice designations (e.g., `S1`, `S2`)
 
-### Supported Wire Gauges
+See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed information on creating and formatting these CSV files.
 
-Currently supports TXL wire in the following gauges:
-- 12 AWG
-- 14 AWG
-- 16 AWG
-- 18 AWG
+Example template files are provided:
+- `wire_lookup_example.csv` - Template showing wire mapping format
+- `device_lookup_example.csv` - Template showing device mapping format
 - 20 AWG
 
 Multiple colors are supported for each gauge. See the `rapidharness_wire_lut` dictionary in the source code for the complete list.
@@ -187,19 +210,17 @@ Multiple colors are supported for each gauge. See the `rapidharness_wire_lut` di
 
 - File paths must be manually configured in the script (no GUI yet)
 - Cable assemblies (multi-conductor cables) are not fully supported
-- Only TXL wire type is currently in the lookup table
-- Part number mappings are limited to commonly used components
+- Cable assemblies (multi-conductor cables) are not fully supported
+- Lookup tables must be manually created for each project
+- CSV files must be properly formatted (UTF-8 encoding, correct column headers)
 
 ## Future Enhancements
 
 Planned improvements include:
-- GUI or command-line interface for file selection
-- Expanded wire type and part number lookup tables
+- GUI for easier file and lookup table management
 - Better error reporting and validation
 - Support for cable assemblies
-- Configuration file for custom mappings
-
-## Dependencies
+- Auto-generation of lookup table templates from RapidHarness export
 
 - **openpyxl** (3.1.2): Excel file reading and writing
 - **PyInstaller** (build-time only): Creating standalone executables
@@ -209,7 +230,8 @@ Planned improvements include:
 [Add your license information here]
 
 ## Contributing
-
+click** (8.1.7): Command-line interface framework
+- **
 [Add contribution guidelines if this is open source]
 
 ## Support
