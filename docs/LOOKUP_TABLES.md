@@ -95,7 +95,7 @@ To create your lookup tables, you'll need to identify all unique wire types and 
 Once you've created your lookup table CSV files, run the converter like this:
 
 ```bash
-python from-to-converter.py \
+python src/from-to-converter.py \
   --input "RapidHarness_Export.xlsx" \
   --output "E3_FromToList.xlsx" \
   --wire-map "wire_lookup.csv" \
@@ -105,17 +105,17 @@ python from-to-converter.py \
 Or using short options:
 
 ```bash
-python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
+python src/from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
 ```
 
 ## Troubleshooting
 
 ### "Unable to find wire in lookup table"
 
-This warning means a wire part number from your RapidHarness export wasn't found in your wire lookup CSV. The wire data will be left blank in the output. To fix:
+This error means a wire part number from your RapidHarness export wasn't found in your wire lookup CSV. Wire mappings are critical—without them, E3.series won't know how to import the wire data, since manufacturer part numbers aren't the common way to specify wires (nobody cares who made it most of the time, they care that it's 14AWG Orange GXL wire). To fix:
 
-1. Check the exact spelling of the wire name in the warning message
-2. Add that wire name to your `wire_lookup.csv` file
+1. Check the exact spelling of the wire name in the error message
+2. Add that wire name to your `wire_lookup.csv` file with the correct E3 wire specifications
 3. Re-run the conversion
 
 ### "Error loading lookup table"
@@ -125,9 +125,15 @@ This error usually means:
 - The CSV file is missing required columns
 - The CSV file has formatting issues (check for extra commas, quotes, etc.)
 
+To troubleshoot:
+1. Verify the CSV file exists at the path specified
+2. Open the file in a text editor and confirm it has the correct column headers
+3. Check for extra spaces in headers or malformed lines
+4. Ensure the file is saved with UTF-8 encoding
+
 ### Missing Device Mappings
 
-If a device part number isn't in your device lookup table, the tool will use the original RapidHarness part number. This may cause issues during E3 import if the part numbers don't match your E3 database.
+If a device part number isn't in your device lookup table, the tool will silently use the original RapidHarness part number. This is **not** an error because device part numbers are globally unique and may already exist in your E3.series database. However, if the part number doesn't match your E3 database, you may see errors during E3 import (E3 will create a "virtual device" placeholder to allow the import to continue).
 
 ## Template Files
 

@@ -96,12 +96,19 @@ from-to-list-import/
 - `--help`: Display help information
 
 **Error Handling:**
-The tool prints errors in red to the terminal as they're encountered. Use the `--error-log` flag to save detailed error information to a CSV file for further analysis. The error log includes:
-- Error type (WIRE_NOT_FOUND, DEVICE_NOT_FOUND)
-- Row number where the error occurred
-- Entity ID and value that couldn't be mapped
-- Detailed error description
+The tool logs issues encountered during conversion and displays them in the console:
+- **Errors (displayed in red):** Critical issues representing data loss (e.g., missing wire mappings)
+- **Warnings (if any, displayed in yellow):** Non-critical issues that don't prevent conversion, but may warrant investigation
+
+Use the `--error-log` flag to save detailed issue information to a CSV file for further analysis. The issue log includes:
+- Severity level (error or warning)
+- Issue type (e.g., WIRE_NOT_FOUND)
+- Row number where the issue occurred
+- Entity ID and value that caused the issue
+- Detailed description
 - Timestamp
+
+**Note:** Missing device mappings are not logged as errors — device part numbers are globally unique and may already exist in your E3.series database. The original RapidHarness part number will be used if no mapping is found. It's up to you to ensure that RapidHarness parts also exist in the E3 database. You'll see errors in the log when importing the from/to list into E3 if some devices are missing from the E3 database.
 
 **See [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed information on creating and formatting the CSV lookup tables.**
 
