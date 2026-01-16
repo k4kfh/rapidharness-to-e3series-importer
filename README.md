@@ -47,7 +47,7 @@ rapidharness-to-e3series-importer/
 
 ### Downloading the Tool
 
-1. Go to the [Releases](../../releases) page
+1. Go to the [Releases](https://github.com/k4kfh/rapidharness-to-e3series-importer/releases) page
 2. Download the latest `RapidHarnessToE3SeriesImporter.exe`
 3. Save it anywhere on your computer (no installation needed!)
 
