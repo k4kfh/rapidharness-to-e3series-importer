@@ -64,11 +64,8 @@ __version__ = "$version"
     
     - name: Upload executable to release
       if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./dist/RapidHarnessToE3SeriesImporter.exe
-        asset_name: RapidHarnessToE3SeriesImporter.exe
-        asset_content_type: application/octet-stream
+        files: dist/RapidHarnessToE3SeriesImporter.exe
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
