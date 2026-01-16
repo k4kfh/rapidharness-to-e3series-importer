@@ -33,17 +33,7 @@ def convert_device_partnumbers(row: E3FromToListRow, device_lut: dict,
     elif re.search(r'S\d+$', row.from_device_name or ''):
         # Splice detection: devices named S1, S2, etc. should have SPLICE part number
         from_converted = "SPLICE"
-    elif row.from_device_pn is not None and errors is not None and row_num is not None:
-        error_msg = f"Device '{row.from_device_pn}' not found in lookup table (FROM device)"
-        click.echo(f"{Fore.RED}⚠ Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
-        error = ConversionError(
-            error_type="DEVICE_NOT_FOUND",
-            row_number=row_num,
-            entity_id="FROM Device",
-            entity_value=str(row.from_device_pn),
-            description=error_msg
-        )
-        errors.append(error)
+    # Note: Device not found is not an error - device P/Ns are globally unique and may already exist in E3
     
     # Convert TO device
     to_converted = row.to_device_pn
@@ -52,16 +42,6 @@ def convert_device_partnumbers(row: E3FromToListRow, device_lut: dict,
     elif re.search(r'S\d+$', row.to_device_name or ''):
         # Splice detection
         to_converted = "SPLICE"
-    elif row.to_device_pn is not None and errors is not None and row_num is not None:
-        error_msg = f"Device '{row.to_device_pn}' not found in lookup table (TO device)"
-        click.echo(f"{Fore.RED}⚠ Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
-        error = ConversionError(
-            error_type="DEVICE_NOT_FOUND",
-            row_number=row_num,
-            entity_id="TO Device",
-            entity_value=str(row.to_device_pn),
-            description=error_msg
-        )
-        errors.append(error)
+    # Note: Device not found is not an error - device P/Ns are globally unique and may already exist in E3
     
     return (from_converted, to_converted)

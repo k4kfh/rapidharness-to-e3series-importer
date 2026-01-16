@@ -6,7 +6,8 @@ from datetime import datetime
 
 @dataclass
 class ConversionError:
-    """Represents an error encountered during conversion."""
+    """Represents an error or warning encountered during conversion."""
+    severity: str  # "warning" or "error"
     error_type: str
     row_number: int
     entity_id: str

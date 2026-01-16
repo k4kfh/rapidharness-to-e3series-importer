@@ -103,10 +103,15 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
         raise click.Abort()
     
     # Convert device part numbers for each row
+    rows_with_errors = set()
     for idx, row in enumerate(e3_fromto, start=2):
+        errors_count_before = len(errors)
         from_converted, to_converted = convert_device_partnumbers(
             row, device_lut, errors, idx
         )
+        # Track if this row got any new errors
+        if len(errors) > errors_count_before:
+            rows_with_errors.add(idx)
         row.from_device_pn = from_converted
         row.to_device_pn = to_converted
     
@@ -123,11 +128,12 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
             with open(error_log_file, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(
                     f,
-                    fieldnames=['error_type', 'row_number', 'entity_id', 'entity_value', 'description', 'timestamp']
+                    fieldnames=['severity', 'error_type', 'row_number', 'entity_id', 'entity_value', 'description', 'timestamp']
                 )
                 writer.writeheader()
                 for error in errors:
                     writer.writerow({
+                        'severity': error.severity,
                         'error_type': error.error_type,
                         'row_number': error.row_number,
                         'entity_id': error.entity_id,
@@ -135,22 +141,44 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
                         'description': error.description,
                         'timestamp': error.timestamp
                     })
-            click.echo(f"\n{Fore.YELLOW}✓ Error log saved to: {error_log_file}{Style.RESET_ALL}")
+            click.echo(f"\n{Fore.CYAN}[OK] Issue log saved to: {error_log_file}{Style.RESET_ALL}")
         except Exception as e:
-            click.echo(f"{Fore.RED}✗ Failed to write error log: {e}{Style.RESET_ALL}", err=True)
+            click.echo(f"{Fore.RED}[ERROR] Failed to write issue log: {e}{Style.RESET_ALL}", err=True)
     elif error_log_file is not None and len(errors) == 0:
-        click.echo(f"\n{Fore.GREEN}✓ No errors encountered - no error log created{Style.RESET_ALL}")
+        click.echo(f"\n{Fore.GREEN}[OK] No issues encountered - no issue log created{Style.RESET_ALL}")
     
     # Summary output
-    if len(errors) > 0:
-        click.echo(f"\n{Fore.YELLOW}⚠ {len(errors)} error(s) encountered during conversion{Style.RESET_ALL}")
-        if error_log_file is None:
-            click.echo(f"{Fore.CYAN}  Use the --error-log flag to save detailed error information to a CSV file{Style.RESET_ALL}")
+    total_rows = len(e3_fromto)
+    rows_with_errors_set = rows_with_errors.union(set(e.row_number for e in errors if e.severity == "error"))
+    error_rows = len(rows_with_errors_set)
+    successful_rows = total_rows - error_rows
     
-    if verbose:
-        click.echo(f"Conversion complete! Output saved to: {output_file}")
+    # Count warnings vs errors
+    warning_count = sum(1 for e in errors if e.severity == "warning")
+    error_count = sum(1 for e in errors if e.severity == "error")
+    
+    click.echo(f"\n{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+    click.echo(f"{Fore.CYAN}Conversion Summary{Style.RESET_ALL}")
+    click.echo(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+    click.echo(f"Total rows processed:     {total_rows}")
+    click.echo(f"Rows completed:           {Fore.GREEN}{successful_rows}{Style.RESET_ALL}")
+    
+    if error_rows > 0:
+        click.echo(f"Rows with issues:         {Fore.RED}{error_rows}{Style.RESET_ALL} ({error_rows}/{total_rows})")
     else:
-        click.echo(f"Successfully converted {len(e3_fromto)} connections to {output_file}")
+        click.echo(f"Rows with issues:         {Fore.GREEN}0{Style.RESET_ALL}")
+    
+    if warning_count > 0 or error_count > 0:
+        click.echo(f"\nIssue breakdown:")
+        if warning_count > 0:
+            click.echo(f"  {Fore.YELLOW}Warnings:{Style.RESET_ALL} {warning_count}")
+        if error_count > 0:
+            click.echo(f"  {Fore.RED}Errors:{Style.RESET_ALL}   {error_count}")
+        if error_log_file is None:
+            click.echo(f"{Fore.CYAN}→ Use --error-log to save detailed issue information{Style.RESET_ALL}")
+    
+    click.echo(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+    click.echo(f"Output saved to: {output_file}")
 
 
 if __name__ == '__main__':
