@@ -1,10 +1,8 @@
 """Conversion logic for device part numbers and other transformations."""
 
 import re
-import click
-from colorama import Fore, Style
 
-from models import E3FromToListRow, ConversionError
+from models import E3FromToListRow
 
 
 def convert_device_partnumbers(row: E3FromToListRow, device_lut: dict, 

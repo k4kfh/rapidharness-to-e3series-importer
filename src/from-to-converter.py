@@ -103,15 +103,10 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
         raise click.Abort()
     
     # Convert device part numbers for each row
-    rows_with_errors = set()
     for idx, row in enumerate(e3_fromto, start=2):
-        errors_count_before = len(errors)
         from_converted, to_converted = convert_device_partnumbers(
             row, device_lut, errors, idx
         )
-        # Track if this row got any new errors
-        if len(errors) > errors_count_before:
-            rows_with_errors.add(idx)
         row.from_device_pn = from_converted
         row.to_device_pn = to_converted
     
@@ -149,8 +144,7 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     
     # Summary output
     total_rows = len(e3_fromto)
-    rows_with_errors_set = rows_with_errors.union(set(e.row_number for e in errors if e.severity == "error"))
-    error_rows = len(rows_with_errors_set)
+    error_rows = len(set(e.row_number for e in errors if e.severity == "error"))
     successful_rows = total_rows - error_rows
     
     # Count warnings vs errors
@@ -161,7 +155,7 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     click.echo(f"{Fore.CYAN}Conversion Summary{Style.RESET_ALL}")
     click.echo(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
     click.echo(f"Total rows processed:     {total_rows}")
-    click.echo(f"Rows completed:           {Fore.GREEN}{successful_rows}{Style.RESET_ALL}")
+    click.echo(f"Rows processed without issues:           {Fore.GREEN}{successful_rows}{Style.RESET_ALL}")
     
     if error_rows > 0:
         click.echo(f"Rows with issues:         {Fore.RED}{error_rows}{Style.RESET_ALL} ({error_rows}/{total_rows})")

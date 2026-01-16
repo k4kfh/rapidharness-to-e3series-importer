@@ -6,7 +6,17 @@ from datetime import datetime
 
 @dataclass
 class ConversionError:
-    """Represents an error or warning encountered during conversion."""
+    """Represents an error or warning encountered during conversion.
+    
+    Attributes:
+        severity: Either "error" (data loss) or "warning" (non-critical issue)
+        error_type: Category of error (e.g., WIRE_NOT_FOUND)
+        row_number: Source row number from input file
+        entity_id: What was being processed (e.g., "Wire", "FROM Device")
+        entity_value: The value that caused the error
+        description: Human-readable error message
+        timestamp: ISO timestamp of when error was recorded
+    """
     severity: str  # "warning" or "error"
     error_type: str
     row_number: int
@@ -40,17 +50,21 @@ class RapidHarnessEndpoint:
     """Represents a specific pin on a specific connector or device in RapidHarness."""
     
     raw_string: str
-    """The raw reference designator, unmodified."""
+    """The raw reference designator, unmodified. Format: 'Device' or 'Device.Pin'"""
 
     def get_device_des(self) -> str:
         """Return only the device/connector portion (strip away pin designation if present)."""
+        if not self.raw_string:
+            return None
         return self.raw_string.split(".")[0]
     
     def get_pin_des(self) -> str:
         """Return only the pin designation (strip away device designation).
         
-        Returns None for pinless devices like Ring Terminals.
+        Returns None for pinless devices (no dot separator in raw_string).
         """
+        if not self.raw_string:
+            return None
         split_raw_str = self.raw_string.split(".")
         if len(split_raw_str) == 1:
             return None

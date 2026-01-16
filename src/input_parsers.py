@@ -95,12 +95,13 @@ class RapidHarnessParser(InputParser):
             
             # Column D: Conductor (extract wire index, e.g. "19" from "W19.Black")
             conductor_cell = sheet.cell(row=row_num, column=self.COL_CONDUCTOR).value
-            try:
-                match = re.search(r'\d+', conductor_cell)
-                if match:
-                    e3_fromto_row.wire_index = int(match.group())
-            except (TypeError, AttributeError):
-                pass  # Will be logged if needed in validation
+            if conductor_cell:
+                try:
+                    match = re.search(r'\d+', conductor_cell)
+                    if match:
+                        e3_fromto_row.wire_index = int(match.group())
+                except (TypeError, ValueError):
+                    pass  # Skip if conductor format is unexpected
             
             # Column E: Wire Part Number - lookup in wire table
             rh_wire_sku = sheet.cell(row=row_num, column=self.COL_WIRE_SKU).value
