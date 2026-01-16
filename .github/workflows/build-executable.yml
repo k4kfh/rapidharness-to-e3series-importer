@@ -13,34 +13,60 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for git operations
     
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        cache: 'pip'
     
     - name: Install dependencies
+      shell: pwsh
       run: |
+        Write-Host "Installing dependencies..." -ForegroundColor Yellow
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+        Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
     - name: Set version from release tag
       if: github.event_name == 'release'
+      shell: pwsh
       run: |
         $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
         $version = $tag -replace '^v', ''
         $content = @"
-        """Version information for the From-To List Converter."""
+        """Version information for the RapidHarness to E3.series Importer."""
         
         __version__ = "$version"
         "@
         Set-Content -Path "src/__version__.py" -Value $content -Encoding UTF8
-        Write-Host "Version set to: $version"
+        Write-Host "Version set to: $version" -ForegroundColor Green
+    
+    - name: Set development version (manual builds)
+      if: github.event_name != 'release'
+      shell: pwsh
+      run: |
+        $commitHash = git rev-parse --short HEAD
+        $devVersion = "dev-$commitHash"
+        $content = @"
+        """Version information for the RapidHarness to E3.series Importer."""
+        
+        __version__ = "$devVersion"
+        "@
+        Set-Content -Path "src/__version__.py" -Value $content -Encoding UTF8
+        Write-Host "Development version set to: $devVersion" -ForegroundColor Green
     
     - name: Build executable with PyInstaller
+      shell: pwsh
       run: |
+        Write-Host "Building executable with PyInstaller..." -ForegroundColor Yellow
+        
+        # Clean any previous builds
+        Remove-Item -Recurse -Force dist, build -ErrorAction SilentlyContinue
+        
+        # Build with exact same options as local build script
         pyinstaller --onefile `
           --name "RapidHarnessToE3SeriesImporter" `
           --console `
@@ -54,6 +80,33 @@ jobs:
           --hidden-import colorama `
           --noupx `
           src/from-to-converter.py
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Build failed!" -ForegroundColor Red
+            exit 1
+        }
+        
+        Write-Host "Build complete!" -ForegroundColor Green
+        
+        # Verify the executable exists
+        if (Test-Path "dist/RapidHarnessToE3SeriesImporter.exe") {
+            $size = (Get-Item "dist/RapidHarnessToE3SeriesImporter.exe").Length / 1MB
+            Write-Host "Executable size: $([math]::Round($size, 2)) MB" -ForegroundColor Cyan
+        } else {
+            Write-Host "ERROR: Executable not found!" -ForegroundColor Red
+            exit 1
+        }
+    
+    - name: Test executable
+      shell: pwsh
+      run: |
+        Write-Host "Testing executable..." -ForegroundColor Yellow
+        & "dist/RapidHarnessToE3SeriesImporter.exe" --version
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Executable test failed!" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "Executable test passed!" -ForegroundColor Green
     
     - name: Upload executable as artifact
       uses: actions/upload-artifact@v4
