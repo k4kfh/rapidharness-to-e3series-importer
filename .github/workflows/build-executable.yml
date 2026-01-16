@@ -32,10 +32,10 @@ jobs:
         $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
         $version = $tag -replace '^v', ''
         $content = @"
-        """Version information for the From-To List Converter."""
-        
-        __version__ = "$version"
-        "@
+"""Version information for the RapidHarness to E3.series Importer."""
+
+__version__ = "$version"
+"@
         Set-Content -Path "src/__version__.py" -Value $content -Encoding UTF8
         Write-Host "Version set to: $version"
     
@@ -64,8 +64,11 @@ jobs:
     
     - name: Upload executable to release
       if: github.event_name == 'release'
-      uses: softprops/action-gh-release@v2
+      uses: actions/upload-release-asset@v1
       with:
-        files: dist/RapidHarnessToE3SeriesImporter.exe
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./dist/RapidHarnessToE3SeriesImporter.exe
+        asset_name: RapidHarnessToE3SeriesImporter.exe
+        asset_content_type: application/octet-stream
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
