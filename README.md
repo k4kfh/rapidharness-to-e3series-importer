@@ -61,9 +61,14 @@ from-to-list-import/
    FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
    ```
    
-   **Option C: With verbose output**
+   **Option C: Save errors to a CSV file for analysis**
    ```cmd
-   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv --verbose
+   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv --error-log errors.csv
+   ```
+   
+   **Option D: With verbose output**
+   ```cmd
+   FromToConverter.exe -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv -v
    ```
 
 3. **Import into E3.series:**
@@ -77,7 +82,16 @@ from-to-list-import/
 - `--wire-map` or `-w`: Path to the wire lookup table CSV file (required)
 - `--device-map` or `-d`: Path to the device lookup table CSV file (required)
 - `--verbose` or `-v`: Enable detailed output messages (optional)
+- `--error-log` or `-e`: Path to save a CSV file containing detailed error information (optional)
 - `--help`: Display help information
+
+**Error Handling:**
+The tool prints errors in red to the terminal as they're encountered. Use the `--error-log` flag to save detailed error information to a CSV file for further analysis. The error log includes:
+- Error type (WIRE_NOT_FOUND, DEVICE_NOT_FOUND)
+- Row number where the error occurred
+- Entity ID and value that couldn't be mapped
+- Detailed error description
+- Timestamp
 
 **See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed information on creating and formatting the CSV lookup tables.**
 
@@ -109,6 +123,11 @@ from-to-list-import/
    Or use the short form:
    ```powershell
    python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
+   ```
+   
+   With error logging:
+   ```powershell
+   python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv -e errors.csv
    ```
 
 ### Building the Executable Locally
@@ -222,7 +241,11 @@ Planned improvements include:
 - Support for cable assemblies
 - Auto-generation of lookup table templates from RapidHarness export
 
+## Dependencies
+
 - **openpyxl** (3.1.2): Excel file reading and writing
+- **click** (8.1.7): Command-line interface framework
+- **colorama** (0.4.6): Cross-platform colored terminal output
 - **PyInstaller** (build-time only): Creating standalone executables
 
 ## License

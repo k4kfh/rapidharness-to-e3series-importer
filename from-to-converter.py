@@ -5,6 +5,25 @@ import re
 import click
 import csv
 from pathlib import Path
+from colorama import init, Fore, Style
+from datetime import datetime
+
+# Initialize colorama for cross-platform colored terminal output
+init(autoreset=True)
+
+@dataclass
+class ConversionError:
+    """Represents an error encountered during conversion."""
+    error_type: str
+    row_number: int
+    entity_id: str
+    entity_value: str
+    description: str
+    timestamp: str = None
+    
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = datetime.now().isoformat()
 
 @dataclass(frozen=True)
 class E3WireComponent:
@@ -97,12 +116,14 @@ def load_device_lookup_table(csv_path: Path) -> dict:
             device_lut[row['RapidHarness_PartNumber']] = row['E3_Device_Name']
     return device_lut
 
-def convert_rh_partnumber_to_e3(row : E3FromToListRow, device_lut: dict):
+def convert_rh_partnumber_to_e3(row : E3FromToListRow, device_lut: dict, errors: list = None, row_num: int = None):
     """Given a row of the E3 From/To list, evaluate it against a set of mappings.
     If it matches any of the mappings, then 'convert' it to the mapped E3 part number.
     This helps circumvent any subtle differences in naming between E3 and RapidHarness (e.g. "DT04-3S" vs "DT043S"...that kind of thing)
     
-    If no match is found in the conversion process, it just returns the original unmodified part number (or lack thereof)."""
+    If no match is found in the conversion process, it just returns the original unmodified part number (or lack thereof).
+    
+    If errors list is provided, unmapped part numbers (except splices) will be logged as errors."""
     
     # First do the FROM device
     processed_from_device_pn = row.from_device_pn
@@ -117,6 +138,18 @@ def convert_rh_partnumber_to_e3(row : E3FromToListRow, device_lut: dict):
     elif re.search(r'S\d+$', row.from_device_name):
         # It probably is a splice.
         processed_from_device_pn = "SPLICE"
+    elif row.from_device_pn is not None and errors is not None and row_num is not None:
+        # Device part number not found in lookup table
+        error_msg = f"Device '{row.from_device_pn}' not found in lookup table (FROM device)"
+        click.echo(f"{Fore.RED}⚠ Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
+        error = ConversionError(
+            error_type="DEVICE_NOT_FOUND",
+            row_number=row_num,
+            entity_id="FROM Device",
+            entity_value=str(row.from_device_pn),
+            description=error_msg
+        )
+        errors.append(error)
     
     # Next do the TO device
     processed_to_device_pn = row.to_device_pn
@@ -126,6 +159,18 @@ def convert_rh_partnumber_to_e3(row : E3FromToListRow, device_lut: dict):
     elif re.search(r'S\d+$', row.to_device_name):
         # It probably is a splice.
         processed_to_device_pn = "SPLICE"
+    elif row.to_device_pn is not None and errors is not None and row_num is not None:
+        # Device part number not found in lookup table
+        error_msg = f"Device '{row.to_device_pn}' not found in lookup table (TO device)"
+        click.echo(f"{Fore.RED}⚠ Row {row_num}: {error_msg}{Style.RESET_ALL}", err=True)
+        error = ConversionError(
+            error_type="DEVICE_NOT_FOUND",
+            row_number=row_num,
+            entity_id="TO Device",
+            entity_value=str(row.to_device_pn),
+            description=error_msg
+        )
+        errors.append(error)
     
     return (processed_from_device_pn, processed_to_device_pn)
 
@@ -166,12 +211,22 @@ def main():
     is_flag=True,
     help='Enable verbose output'
 )
-def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose):
+@click.option(
+    '--error-log', '-e',
+    'error_log_file',
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    default=None,
+    help='Optional: Path to save a CSV file of all errors encountered'
+)
+def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, error_log_file):
     """Convert RapidHarness wire harness exports to E3.series From-To List format.
     
     This tool reads connection data from a RapidHarness Excel export and converts it
     to the format required by Zuken E3.series CAD software for import.
     """
+    
+    # Initialize error tracking
+    errors = []
     
     if verbose:
         click.echo(f"Input file: {input_file}")
@@ -239,7 +294,16 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose):
         try:
             e3_fromto_row.wire = wire_lut[rh_wire_sku]
         except Exception as e:
-            print(f"Unable to find wire '{rh_wire_sku}' in E3 database. Leaving cell blank in from/to list.")
+            error_msg = f"Wire '{rh_wire_sku}' not found in lookup table"
+            click.echo(f"{Fore.RED}⚠ Row {row}: {error_msg}{Style.RESET_ALL}", err=True)
+            error = ConversionError(
+                error_type="WIRE_NOT_FOUND",
+                row_number=row,
+                entity_id="Wire",
+                entity_value=str(rh_wire_sku),
+                description=error_msg
+            )
+            errors.append(error)
         
         # Column K: FROM Connector Part Number
         e3_fromto_row.from_device_pn = rh_excel_wkbk["Connections"].cell(row=row, column=11).value
@@ -265,16 +329,19 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose):
     # WRITE ACTUAL DATA
     # The start=2 leaves the first column for headers
     for index,row in enumerate(e3_fromto, start=2):
+        # Convert device part numbers and collect any errors
+        from_converted, to_converted = convert_rh_partnumber_to_e3(row, device_lut, errors, index)
+        
         # Column C: From Device Name
         output_wb.active.cell(row=index, column=3, value=row.from_device_name)
         # Column D: From Device Part Number
-        output_wb.active.cell(row=index, column=4, value=convert_rh_partnumber_to_e3(row, device_lut)[0])
+        output_wb.active.cell(row=index, column=4, value=from_converted)
         # Column E: From Device Pin
         output_wb.active.cell(row=index, column=5, value=row.from_pin)
         # Column I: To Device Name
         output_wb.active.cell(row=index, column=9, value=row.to_device_name)
         # Column J: To Device Part Number
-        output_wb.active.cell(row=index, column=10, value=convert_rh_partnumber_to_e3(row, device_lut)[1])
+        output_wb.active.cell(row=index, column=10, value=to_converted)
         # Column K: To Device Pin
         output_wb.active.cell(row=index, column=11, value=row.to_pin)
 
@@ -298,11 +365,35 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose):
         else:
             pass # No wire data is available so leave these cells empty
 
-
-    # PHASE 3: Export errors to second sheet in workbook
-
-    # FINALLY: Save and wrap up
+    # FINALLY: Save the main conversion output
     output_wb.save(e3_fromto_excel_path)
+    
+    # Save errors to CSV if requested
+    if error_log_file is not None and len(errors) > 0:
+        try:
+            with open(error_log_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=['error_type', 'row_number', 'entity_id', 'entity_value', 'description', 'timestamp'])
+                writer.writeheader()
+                for error in errors:
+                    writer.writerow({
+                        'error_type': error.error_type,
+                        'row_number': error.row_number,
+                        'entity_id': error.entity_id,
+                        'entity_value': error.entity_value,
+                        'description': error.description,
+                        'timestamp': error.timestamp
+                    })
+            click.echo(f"\n{Fore.YELLOW}✓ Error log saved to: {error_log_file}{Style.RESET_ALL}")
+        except Exception as e:
+            click.echo(f"{Fore.RED}✗ Failed to write error log: {e}{Style.RESET_ALL}", err=True)
+    elif error_log_file is not None and len(errors) == 0:
+        click.echo(f"\n{Fore.GREEN}✓ No errors encountered - no error log created{Style.RESET_ALL}")
+    
+    # Summary output
+    if len(errors) > 0:
+        click.echo(f"\n{Fore.YELLOW}⚠ {len(errors)} error(s) encountered during conversion{Style.RESET_ALL}")
+        if error_log_file is None:
+            click.echo(f"{Fore.CYAN}  Use the --error-log flag to save detailed error information to a CSV file{Style.RESET_ALL}")
     
     if verbose:
         click.echo(f"Conversion complete! Output saved to: {e3_fromto_excel_path}")
