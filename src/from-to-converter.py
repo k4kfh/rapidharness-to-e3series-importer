@@ -9,6 +9,14 @@ import openpyxl
 # Initialize colorama for cross-platform colored terminal output
 init(autoreset=True)
 
+# Add src directory to path for imports when running as script
+import sys
+from pathlib import Path
+if __name__ == '__main__':
+    src_dir = Path(__file__).parent
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
 from __version__ import __version__
 from utils import load_wire_lookup_table, load_device_lookup_table
 from input_parsers import RapidHarnessParser

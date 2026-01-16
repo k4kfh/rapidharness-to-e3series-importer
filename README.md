@@ -170,20 +170,10 @@ To create a standalone Windows executable for distribution:
    - Check the version: `RapidHarnessToE3SeriesImporter.exe --version`
 
 3. **Distribute:**
-   - Copy `FromToConverter.exe` to any location
+   - Copy `RapidHarnessToE3SeriesImporter.exe` to any location
    - Share with users (no Python installation required)
 
-### Manual Build (Alternative)
-
-If you prefer to build manually without the script:
-
-```powershell
-# Install PyInstaller
-pip install pyinstaller
-
-# Build the executable
-pyinstaller --onefile --console --name "RapidHarnessToE3SeriesImporter" src/from-to-converter.py
-```
+For detailed information about the build system, see [Build-Notes.md](Build-Notes.md).
 
 ### Version Management
 
@@ -223,7 +213,10 @@ The tool performs the following steps:
 3. **Generate E3 From-To List:**
    - Creates properly formatted Excel file for E3.series import
    - Includes device names, part numbers, pins, wire data, and signal names
-tool uses external CSV files for component mapping:
+
+### Component Mapping
+
+The tool uses external CSV files to map items from the RapidHarness parts database to the correct entries in the E3.series database:
 - **Wire lookup table:** Maps RapidHarness wire SKUs to E3 wire components (gauge, color, type). You _must_ set up the mappings from Wires in RapidHarness to Wires in E3.series.
 - **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes where necessary. This allows you to override/overcome subtle differences in part numbering (e.g. ``DT06-2S`` in RapidHarness might map to ``AT06-2S`` in E3.series)
 - **Splice detection:** Automatically identifies splice designations with an ``S`` prefix (e.g., `S1`, `S2`)
@@ -253,6 +246,10 @@ This works for me right now, but PRs are welcome. I'd love to see the following 
 - **click** (8.1.7): Command-line interface framework
 - **colorama** (0.4.6): Cross-platform colored terminal output
 - **PyInstaller** (build-time only): Creating standalone executables
+
+## Build System Documentation
+
+For detailed information about how the build system works, including version management, PyInstaller configuration, and troubleshooting, see [Build-Notes.md](Build-Notes.md).
 
 ## License
 

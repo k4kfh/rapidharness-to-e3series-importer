@@ -13,7 +13,6 @@ ENV/
 # PyInstaller
 build/
 dist/
-*.spec
 
 # IDE
 .vscode/
