@@ -17,14 +17,24 @@ This tool reads Excel exports from RapidHarness and converts them into E3.series
 
 ```
 from-to-list-import/
-├── from-to-converter.py          # Main conversion script
+├── README.md                     # This file
 ├── requirements.txt              # Python dependencies
 ├── build_exe.ps1                 # Local build script for creating .exe
-├── README.md                     # This file
-├── LOOKUP_TABLES.md              # Detailed guide for creating CSV lookup tables
-├── From-To-Import-Notes.md       # Technical notes and documentation
-├── wire_lookup_example.csv       # Example wire lookup table template
-├── device_lookup_example.csv     # Example device lookup table template
+├── src/
+│   ├── from-to-converter.py      # Main CLI entry point
+│   ├── models.py                 # Data model definitions
+│   ├── input_parsers.py          # Abstract parser interface + RapidHarness parser
+│   ├── converters.py             # Conversion logic for device part numbers
+│   ├── output_writers.py         # E3 Excel output formatting
+│   └── utils.py                  # Lookup table loading utilities
+├── examples/
+│   ├── wire_lookup_example.csv   # Example wire lookup table template
+│   └── device_lookup_example.csv # Example device lookup table template
+├── docs/
+│   ├── LOOKUP_TABLES.md          # Detailed guide for creating CSV lookup tables
+│   ├── From-To-Import-Notes.md   # Technical notes and documentation
+│   └── images/
+│       └── device-not-in-db-during-import.png
 ├── .github/
 │   └── workflows/
 │       └── build-executable.yml  # GitHub Actions workflow for automated builds
@@ -44,10 +54,10 @@ from-to-list-import/
 
 1. **Prepare your input files:**
    - Export your RapidHarness design to Excel format
-   - Create two CSV lookup tables (see [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed instructions):
+   - Create two CSV lookup tables (see [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed instructions):
      - Wire lookup table (maps wire part numbers)
      - Device lookup table (maps connector/device part numbers)
-   - Example templates are provided: `wire_lookup_example.csv` and `device_lookup_example.csv`
+   - Example templates are provided in the `examples/` folder: `wire_lookup_example.csv` and `device_lookup_example.csv`
 
 2. **Run the converter:**
    
@@ -93,7 +103,7 @@ The tool prints errors in red to the terminal as they're encountered. Use the `-
 - Detailed error description
 - Timestamp
 
-**See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed information on creating and formatting the CSV lookup tables.**
+**See [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed information on creating and formatting the CSV lookup tables.**
 
 ## For Developers
 
@@ -112,22 +122,22 @@ The tool prints errors in red to the terminal as they're encountered. Use the `-
    ```
 
 3. **Create your lookup table CSV files:**
-   - See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed instructions
-   - Use the provided example files as templates
+   - See [LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed instructions
+   - Use the provided example files in `examples/` as templates
 
 4. **Run the script directly:**
    ```powershell
-   python from-to-converter.py --input "input.xlsx" --output "output.xlsx" --wire-map "wire_lookup.csv" --device-map "device_lookup.csv"
+   python src/from-to-converter.py --input "input.xlsx" --output "output.xlsx" --wire-map "examples/wire_lookup.csv" --device-map "examples/device_lookup.csv"
    ```
    
    Or use the short form:
    ```powershell
-   python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv
+   python src/from-to-converter.py -i input.xlsx -o output.xlsx -w examples/wires.csv -d examples/devices.csv
    ```
    
    With error logging:
    ```powershell
-   python from-to-converter.py -i input.xlsx -o output.xlsx -w wires.csv -d devices.csv -e errors.csv
+   python src/from-to-converter.py -i input.xlsx -o output.xlsx -w examples/wires.csv -d examples/devices.csv -e errors.csv
    ```
 
 ### Building the Executable Locally
@@ -216,9 +226,9 @@ tool uses external CSV files for component mapping:
 - **Device lookup table:** Converts between RapidHarness and E3 part numbering schemes
 - **Splice detection:** Automatically identifies splice designations (e.g., `S1`, `S2`)
 
-See [LOOKUP_TABLES.md](LOOKUP_TABLES.md) for detailed information on creating and formatting these CSV files.
+See [docs/LOOKUP_TABLES.md](docs/LOOKUP_TABLES.md) for detailed information on creating and formatting these CSV files.
 
-Example template files are provided:
+Example template files are provided in the `examples/` folder:
 - `wire_lookup_example.csv` - Template showing wire mapping format
 - `device_lookup_example.csv` - Template showing device mapping format
 - 20 AWG
@@ -260,5 +270,5 @@ click** (8.1.7): Command-line interface framework
 ## Support
 
 For questions or issues:
-- See `From-To-Import-Notes.md` for technical details
+- See [docs/From-To-Import-Notes.md](docs/From-To-Import-Notes.md) for technical details
 - [Add contact information or issue tracker link]

@@ -40,7 +40,7 @@ jobs:
           --hidden-import pathlib `
           --hidden-import colorama `
           --noupx `
-          from-to-converter.py
+          src/from-to-converter.py
     
     - name: Upload executable as artifact
       uses: actions/upload-artifact@v4

@@ -155,4 +155,3 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
 
 if __name__ == '__main__':
     cli_main()
-
