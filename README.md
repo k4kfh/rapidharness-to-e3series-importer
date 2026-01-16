@@ -93,6 +93,7 @@ from-to-list-import/
 - `--device-map` or `-d`: Path to the device lookup table CSV file (required)
 - `--verbose` or `-v`: Enable detailed output messages (optional)
 - `--error-log` or `-e`: Path to save a CSV file containing detailed error information (optional)
+- `--version`: Display the application version
 - `--help`: Display help information
 
 **Error Handling:**
@@ -155,10 +156,17 @@ To create a standalone Windows executable for distribution:
    ```powershell
    .\build_exe.ps1
    ```
+   
+   The build script will automatically:
+   - Set the version to `dev-<commit-hash>` (e.g., `dev-261c5a6`)
+   - Clean previous build artifacts
+   - Install dependencies
+   - Build the executable with PyInstaller
 
 2. **Find the executable:**
    - The built executable will be in `dist\FromToConverter.exe`
    - This is a fully portable, standalone application
+   - Check the version: `FromToConverter.exe --version`
 
 3. **Distribute:**
    - Copy `FromToConverter.exe` to any location
@@ -173,8 +181,28 @@ If you prefer to build manually without the script:
 pip install pyinstaller
 
 # Build the executable
-pyinstaller --onefile --console --name "FromToConverter" from-to-converter.py
+pyinstaller --onefile --console --name "FromToConverter" src/from-to-converter.py
 ```
+
+### Version Management
+
+The application version is managed in `src/__version__.py`:
+
+**For Release Builds (GitHub Actions):**
+- Create a git tag: `git tag v1.0.0`
+- Push the tag: `git push origin v1.0.0`
+- Create a GitHub Release from the tag
+- GitHub Actions automatically extracts the version from the tag and updates `src/__version__.py`
+- The executable is built with the release version (e.g., `1.0.0`)
+
+**For Development Builds (Local):**
+- Run `.\build_exe.ps1` to build locally
+- The script automatically sets the version to `dev-<commit-hash>` (e.g., `dev-261c5a6`)
+- Check the version: `FromToConverter.exe --version`
+
+**To manually update the version:**
+- Edit `src/__version__.py` and change `__version__ = "1.0.0"` to your desired version
+- The CLI will display this version with `--version` flag
 
 ## Automated Builds (GitHub Actions)
 

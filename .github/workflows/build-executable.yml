@@ -26,6 +26,19 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
+    - name: Set version from release tag
+      if: github.event_name == 'release'
+      run: |
+        $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
+        $version = $tag -replace '^v', ''
+        $content = @"
+        """Version information for the From-To List Converter."""
+        
+        __version__ = "$version"
+        "@
+        Set-Content -Path "src/__version__.py" -Value $content -Encoding UTF8
+        Write-Host "Version set to: $version"
+    
     - name: Build executable with PyInstaller
       run: |
         pyinstaller --onefile `
