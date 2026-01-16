@@ -4,6 +4,7 @@ import click
 from pathlib import Path
 from colorama import init, Fore, Style
 import csv
+import openpyxl
 
 # Initialize colorama for cross-platform colored terminal output
 init(autoreset=True)
@@ -77,6 +78,12 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
         wire_lut = load_wire_lookup_table(wire_map_file)
         if verbose:
             click.echo(f"Loaded {len(wire_lut)} wire mappings")
+    except FileNotFoundError:
+        click.echo(f"Error: Wire lookup table not found: {wire_map_file}", err=True)
+        raise click.Abort()
+    except (KeyError, ValueError) as e:
+        click.echo(f"Error: Wire lookup table format invalid: {e}", err=True)
+        raise click.Abort()
     except Exception as e:
         click.echo(f"Error loading wire lookup table: {e}", err=True)
         raise click.Abort()
@@ -85,6 +92,12 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
         device_lut = load_device_lookup_table(device_map_file)
         if verbose:
             click.echo(f"Loaded {len(device_lut)} device mappings")
+    except FileNotFoundError:
+        click.echo(f"Error: Device lookup table not found: {device_map_file}", err=True)
+        raise click.Abort()
+    except (KeyError, ValueError) as e:
+        click.echo(f"Error: Device lookup table format invalid: {e}", err=True)
+        raise click.Abort()
     except Exception as e:
         click.echo(f"Error loading device lookup table: {e}", err=True)
         raise click.Abort()
@@ -98,6 +111,12 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
         e3_fromto = parser.parse(input_file, wire_lut, errors, verbose)
     except click.ClickException:
         raise
+    except FileNotFoundError:
+        click.echo(f"Error: Input file not found: {input_file}", err=True)
+        raise click.Abort()
+    except openpyxl.utils.exceptions.InvalidFileException:
+        click.echo(f"Error: Input file is not a valid Excel file: {input_file}", err=True)
+        raise click.Abort()
     except Exception as e:
         click.echo(f"Error parsing input file: {e}", err=True)
         raise click.Abort()
@@ -113,6 +132,12 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     # Write output
     try:
         write_e3_fromto_list(e3_fromto, output_file)
+    except PermissionError:
+        click.echo(f"Error: Permission denied writing to output file: {output_file}", err=True)
+        raise click.Abort()
+    except OSError as e:
+        click.echo(f"Error: Cannot write to output file: {e}", err=True)
+        raise click.Abort()
     except Exception as e:
         click.echo(f"Error writing output file: {e}", err=True)
         raise click.Abort()
@@ -137,6 +162,10 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
                         'timestamp': error.timestamp
                     })
             click.echo(f"\n{Fore.CYAN}[OK] Issue log saved to: {error_log_file}{Style.RESET_ALL}")
+        except PermissionError:
+            click.echo(f"{Fore.RED}[ERROR] Permission denied writing to issue log: {error_log_file}{Style.RESET_ALL}", err=True)
+        except OSError as e:
+            click.echo(f"{Fore.RED}[ERROR] Cannot write issue log: {e}{Style.RESET_ALL}", err=True)
         except Exception as e:
             click.echo(f"{Fore.RED}[ERROR] Failed to write issue log: {e}{Style.RESET_ALL}", err=True)
     elif error_log_file is not None and len(errors) == 0:
@@ -144,10 +173,6 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     
     # Summary output
     total_rows = len(e3_fromto)
-    error_rows = len(set(e.row_number for e in errors if e.severity == "error"))
-    successful_rows = total_rows - error_rows
-    
-    # Count warnings vs errors
     warning_count = sum(1 for e in errors if e.severity == "warning")
     error_count = sum(1 for e in errors if e.severity == "error")
     
@@ -155,21 +180,16 @@ def cli_main(input_file, output_file, wire_map_file, device_map_file, verbose, e
     click.echo(f"{Fore.CYAN}Conversion Summary{Style.RESET_ALL}")
     click.echo(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
     click.echo(f"Total rows processed:     {total_rows}")
-    click.echo(f"Rows processed without issues:           {Fore.GREEN}{successful_rows}{Style.RESET_ALL}")
     
-    if error_rows > 0:
-        click.echo(f"Rows with issues:         {Fore.RED}{error_rows}{Style.RESET_ALL} ({error_rows}/{total_rows})")
-    else:
-        click.echo(f"Rows with issues:         {Fore.GREEN}0{Style.RESET_ALL}")
-    
-    if warning_count > 0 or error_count > 0:
-        click.echo(f"\nIssue breakdown:")
-        if warning_count > 0:
-            click.echo(f"  {Fore.YELLOW}Warnings:{Style.RESET_ALL} {warning_count}")
+    if error_count > 0 or warning_count > 0:
         if error_count > 0:
-            click.echo(f"  {Fore.RED}Errors:{Style.RESET_ALL}   {error_count}")
+            click.echo(f"Errors:                   {Fore.RED}{error_count}{Style.RESET_ALL}")
+        if warning_count > 0:
+            click.echo(f"Warnings:                 {Fore.YELLOW}{warning_count}{Style.RESET_ALL}")
         if error_log_file is None:
             click.echo(f"{Fore.CYAN}→ Use --error-log to save detailed issue information{Style.RESET_ALL}")
+    else:
+        click.echo(f"Status:                   {Fore.GREEN}No issues{Style.RESET_ALL}")
     
     click.echo(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
     click.echo(f"Output saved to: {output_file}")
